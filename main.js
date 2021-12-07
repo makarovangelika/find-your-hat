@@ -1,4 +1,5 @@
 const prompt = require('prompt-sync')({sigint: true});
+const term = require( 'terminal-kit' ).terminal;
 
 const hat = '^';
 const hole = 'O';
@@ -35,7 +36,7 @@ class Field {
         this.locationY -= 1;
         break;
       default:
-        console.log('Enter r, l, u or d');
+        term.red('Enter r, l, u or d');
         this.askQuestion();
         break;
     }
@@ -57,11 +58,11 @@ class Field {
     this.print();
     this.askQuestion();
     if (this.isOutOfBounds()) {
-      console.log('Sorry, you are out of bounds');
+      term.red('Sorry, you are out of bounds');
     } else if (this.isHole()) {
-      console.log('Sorry, you fell down a hole');
+      term.red('Sorry, you fell down a hole');
     } else if (this.isHat()) {
-      console.log('Congrats, you found your hat!');
+      term.yellow('Congrats, you found your hat!');
     } else {
       this.field[this.locationY][this.locationX] = pathCharacter;
       this.runGame();
