@@ -75,26 +75,88 @@ class Field {
     this.player.x >= this.field[0].length);
     }
   runGame() {
-    this.print();
-    this.askQuestion();
-    if (this.isOutOfBounds()) {
-      term.red('Sorry, you are out of bounds');
-    } else if (this.isHole()) {
-      term.red('Sorry, you fell down a hole');
-    } else if (this.isHat()) {
-      term.yellow('Congrats, you found your hat!');
-    } else {
-      this.field[this.playerPrev.y][this.playerPrev.x] = pathCharacter;
-      this.field[this.player.y][this.player.x] = character;
-      this.runGame();
-    }
+    while (true) {
+      this.print();
+      this.askQuestion();
+      if (this.isOutOfBounds()) {
+        term.red('Sorry, you are out of bounds');
+        break;
+      } else if (this.isHole()) {
+        term.red('Sorry, you fell down a hole');
+        break;
+      } else if (this.isHat()) {
+        term.yellow('Congrats, you found your hat!');
+        break;
+      } else {
+        this.field[this.playerPrev.y][this.playerPrev.x] = pathCharacter;
+        this.field[this.player.y][this.player.x] = character;
+      }
+    } 
   }
-  solver() {
-    /*const hatUp = this.field[hatRow - 1][hatIndex];
-    const hatDown = this.field[hatRow + 1][hatIndex];
-    const hatLeft = this.field[hatRow][hatIndex - 1];
-    const hatRight = this.field[hatRow][hatIndex + 1];*/
-    
+  canBeSolved() {
+    const fieldGroups = [];
+    this.field.forEach(row => {
+      const rowGroups = [];
+      row.forEach(cell => {
+        if (cell === hole) {
+          rowGroups.push(-1);
+        } else {
+          rowGroups.push(null);
+        }
+      });
+      fieldGroups.push(rowGroups);
+    });
+
+    function getNeighbours(y, x) {
+      let neighbours = [];
+      if (y - 1 >= 0) {
+        neighbours.push(fieldGroups[y-1][x]);
+      }
+      if (y + 1 < fieldGroups.length) {
+        neighbours.push(fieldGroups[y + 1][x]);
+      }
+      if (x - 1 >= 0) {
+        neighbours.push(fieldGroups[y][x - 1]);
+      }
+      if (x + 1 < fieldGroups[y].length) {
+        neighbours.push(fieldGroups[y][x + 1]);
+      }
+      return neighbours.filter(neighbour => neighbour !== -1 && neighbour !== null);
+    }
+
+    function mergeGroups(commonGroup, arrayToRemove) {
+      for (let y = 0; y < fieldGroups.length; y++) {
+        let row = fieldGroups[y];
+        for (let x = 0; x < row.length; x++) {
+          let cell = row[x];
+          if (arrayToRemove.includes(cell)) {
+            fieldGroups[y][x] = commonGroup;
+          }
+        }
+      }
+    }
+
+    let groupId = 0;
+    for (let y = 0; y < fieldGroups.length; y++) {
+      let row = fieldGroups[y];
+      for (let x = 0; x < row.length; x++) {
+        let cell = row[x];
+        if (cell !== null) {
+          continue;
+        }
+        let neighbours = getNeighbours(y, x);
+        if (neighbours.length > 0) {
+          fieldGroups[y][x] = neighbours[0];
+          if (neighbours.length > 1) {
+            mergeGroups(neighbours[0], neighbours.slice(1));
+          }
+        } else {
+          groupId++;
+          fieldGroups[y][x] = groupId;
+        }
+      }
+    }
+    return fieldGroups[this.hat.y][this.hat.x] === fieldGroups[this.player.y][this.player.x];
   }
   static generateField(height, width, percentage = 0.1) {
     const field = new Array(height).fill(0).map(el => new Array(width));
@@ -116,6 +178,10 @@ const example = [
   ['░', '░', 'O', 'O'],
   ['░', 'O', 'O', '░'],
 ]
-const myField = new Field(example);
-
-myField.runGame();
+const myField = new Field(Field.generateField(5, 5, 0.2));
+if (!myField.canBeSolved()) {
+    myField.print();
+    term.red("Sorry, this field can't be solved. Run the game again\n");
+} else {
+  myField.runGame();
+}
