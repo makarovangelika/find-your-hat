@@ -4,8 +4,8 @@ const term = require( 'terminal-kit' ).terminal;
 const hat = '^';
 const hole = 'O';
 const fieldCharacter = '░';
-const character = 'p';
-const pathCharacter = '*';
+const playerCharacter = '*';
+const pathCharacter = 'x';
 
 class Field {
   constructor(field) {
@@ -26,7 +26,7 @@ class Field {
 
     this.player = freeFields.pop();
     this.playerPrev = {x: this.player.x, y: this.player.y}
-    this.field[this.player.y][this.player.x] = character;
+    this.field[this.player.y][this.player.x] = playerCharacter;
 
     this.hat = freeFields.pop();
     this.field[this.hat.y][this.hat.x] = hat;
@@ -89,7 +89,7 @@ class Field {
         break;
       } else {
         this.field[this.playerPrev.y][this.playerPrev.x] = pathCharacter;
-        this.field[this.player.y][this.player.x] = character;
+        this.field[this.player.y][this.player.x] = playerCharacter;
       }
     } 
   }
@@ -172,7 +172,7 @@ const example = [
   ['░', '░', 'O', 'O'],
   ['░', 'O', 'O', '░'],
 ]
-const myField = new Field(Field.generateField(5, 5, 0.4));
+const myField = new Field(Field.generateField(5, 5, 0.2));
 if (!myField.canBeSolved()) {
     myField.print();
     term.red("Sorry, this field can't be solved. Run the game again\n");
