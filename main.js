@@ -112,25 +112,19 @@ class Field {
       if (y - 1 >= 0) {
         neighbours.push(fieldGroups[y-1][x]);
       }
-      if (y + 1 < fieldGroups.length) {
-        neighbours.push(fieldGroups[y + 1][x]);
-      }
       if (x - 1 >= 0) {
         neighbours.push(fieldGroups[y][x - 1]);
-      }
-      if (x + 1 < fieldGroups[y].length) {
-        neighbours.push(fieldGroups[y][x + 1]);
       }
       return neighbours.filter(neighbour => neighbour !== -1 && neighbour !== null);
     }
 
-    function mergeGroups(commonGroup, arrayToRemove) {
+    function mergeGroups(MergeInGroup, groupToMerge) {
       for (let y = 0; y < fieldGroups.length; y++) {
         let row = fieldGroups[y];
         for (let x = 0; x < row.length; x++) {
           let cell = row[x];
-          if (arrayToRemove.includes(cell)) {
-            fieldGroups[y][x] = commonGroup;
+          if (groupToMerge === cell) {
+            fieldGroups[y][x] = MergeInGroup;
           }
         }
       }
@@ -148,7 +142,7 @@ class Field {
         if (neighbours.length > 0) {
           fieldGroups[y][x] = neighbours[0];
           if (neighbours.length > 1) {
-            mergeGroups(neighbours[0], neighbours.slice(1));
+            mergeGroups(neighbours[0], neighbours[1]);
           }
         } else {
           groupId++;
@@ -178,7 +172,7 @@ const example = [
   ['░', '░', 'O', 'O'],
   ['░', 'O', 'O', '░'],
 ]
-const myField = new Field(Field.generateField(5, 5, 0.2));
+const myField = new Field(Field.generateField(5, 5, 0.4));
 if (!myField.canBeSolved()) {
     myField.print();
     term.red("Sorry, this field can't be solved. Run the game again\n");
