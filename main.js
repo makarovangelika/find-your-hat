@@ -10,6 +10,7 @@ const pathCharacter = 'x';
 class Field {
   constructor(field) {
     this.field = field;
+    //Create the array with coordinates of free fields which aren't holes
     const freeFields = [];
     this.field.forEach((row, y) => {
       row.forEach((cell, x) => {
@@ -18,16 +19,21 @@ class Field {
         }
       });
     });
+    //Shuffle the array of free fields' coordinates
+    //It makes the choice of the field for the hat and the starting point random
     if (freeFields.length >= 2) {
       freeFields.sort((a, b) => 0.5 - Math.random());
     } else {
       throw 'Not enough free fields';
     }
-
+    //Choose the starting point from the shuffled array of free fields' coordinates
     this.player = freeFields.pop();
+    //Create the property of previous position of the player and assign the coordinates of the starting point to it
+    //This property allows to distinguish the current position of the player and the path they made
     this.playerPrev = {x: this.player.x, y: this.player.y}
     this.field[this.player.y][this.player.x] = playerCharacter;
 
+    //Choose the hat from the shuffled array of free fields' coordinates
     this.hat = freeFields.pop();
     this.field[this.hat.y][this.hat.x] = hat;
   }
@@ -94,6 +100,8 @@ class Field {
     } 
   }
   canBeSolved() {
+    //Create two-dimensional array which will contain group IDs for every field
+    //For now fields with holes will be marked as "-1" and all other fields - as "null"
     const fieldGroups = [];
     this.field.forEach(row => {
       const rowGroups = [];
@@ -107,6 +115,7 @@ class Field {
       fieldGroups.push(rowGroups);
     });
 
+    //Function which gets IDs of neigbour fields from the array of group IDs
     function getNeighbours(y, x) {
       let neighbours = [];
       if (y - 1 >= 0) {
@@ -118,19 +127,17 @@ class Field {
       return neighbours.filter(neighbour => neighbour !== -1 && neighbour !== null);
     }
 
-    function mergeGroups(MergeInGroup, groupToMerge) {
-      for (let y = 0; y < fieldGroups.length; y++) {
-        let row = fieldGroups[y];
-        for (let x = 0; x < row.length; x++) {
-          let cell = row[x];
-          if (groupToMerge === cell) {
-            fieldGroups[y][x] = MergeInGroup;
-          }
-        }
+    let groupId = 0;
+    let parents = {};
+
+    function getRoot(id) {
+      while (parents.hasOwnProperty(id)) {
+        id = parents[id];
       }
+      return id;
     }
 
-    let groupId = 0;
+    //Fill the "null" fields of the array of group IDs with IDs
     for (let y = 0; y < fieldGroups.length; y++) {
       let row = fieldGroups[y];
       for (let x = 0; x < row.length; x++) {
@@ -140,17 +147,29 @@ class Field {
         }
         let neighbours = getNeighbours(y, x);
         if (neighbours.length > 0) {
-          fieldGroups[y][x] = neighbours[0];
+          //Assign the group ID of the first neighbour field to the processed field
+          let currentGroup = neighbours[0];
+          fieldGroups[y][x] = currentGroup;
           if (neighbours.length > 1) {
-            mergeGroups(neighbours[0], neighbours[1]);
+            let neighbourGroup = neighbours[1];
+            //Find the roots of both neighbour groups
+            let currentGroupRoot = getRoot(currentGroup);
+            let neighbourGroupRoot = getRoot(neighbourGroup);
+            //Merge the roots of intersecting groups
+            if (currentGroupRoot !== neighbourGroupRoot) {
+              parents[currentGroupRoot] = neighbourGroupRoot;
+            }
           }
         } else {
+          //Create a new group for the fields which don't intersect with processed fields
           groupId++;
           fieldGroups[y][x] = groupId;
         }
       }
     }
-    return fieldGroups[this.hat.y][this.hat.x] === fieldGroups[this.player.y][this.player.x];
+    //Check if the root groups of the field with hat and the starting field are the same
+    //If it's true, these fields are from the common group and the player can go from one point to another
+    return getRoot(fieldGroups[this.hat.y][this.hat.x]) === getRoot(fieldGroups[this.player.y][this.player.x]);
   }
   static generateField(height, width, percentage = 0.1) {
     const field = new Array(height).fill(0).map(el => new Array(width));
@@ -172,7 +191,7 @@ const example = [
   ['░', '░', 'O', 'O'],
   ['░', 'O', 'O', '░'],
 ]
-const myField = new Field(Field.generateField(5, 5, 0.2));
+const myField = new Field(Field.generateField(5, 5, 0.3));
 if (!myField.canBeSolved()) {
     myField.print();
     term.red("Sorry, this field can't be solved. Run the game again\n");
