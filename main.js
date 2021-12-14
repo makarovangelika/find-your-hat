@@ -80,38 +80,38 @@ class Field {
     if (!this.canBeSolved()) {
       this.print();
       term.red("Sorry, this field can't be solved. Run the game again\n");
-    } else {
-      const mode = prompt('Would you like to play the hard mode of the game?');
-      if (mode === 'y' || mode === 'yes') {
-        this.hard = true;
-      }     
-      let askCounter = 0;
-      while (true) {
-        //Checking if the game is in the hard mode and the current turn is after every third turn
-        if (this.hard && askCounter % 3 === 0 && askCounter > 0) {
-          this.addHole();
-          if (!this.canBeSolved()) {
-            this.print();
-            term.red("Sorry, this field can't be solved. Run the game again\n");
-            break;
-          }
-        }
-        this.print();
-        this.askQuestion();
-        askCounter++;
-        if (this.isOutOfBounds()) {
-          term.red('Sorry, you are out of bounds');
-          break;
-        } else if (this.isHole()) {
-          term.red('Sorry, you fell down a hole');
-          break;
-        } else if (this.isHat()) {
-          term.yellow('Congrats, you found your hat!');
+      return;
+    }
+    const mode = prompt('Would you like to play the hard mode of the game?');
+    if (mode === 'y' || mode === 'yes') {
+      this.hard = true;
+    }     
+    let askCounter = 0;
+    while (true) {
+      //Checking if the game is in the hard mode and the current turn is after every third turn
+      if (this.hard && askCounter % 3 === 0 && askCounter > 0) {
+        this.addHole();
+        if (!this.canBeSolved()) {
+          this.print();
+          term.red("Sorry, this field can't be solved. Run the game again\n");
           break;
         }
-        this.field[this.playerPrev.y][this.playerPrev.x] = pathCharacter;
-        this.field[this.player.y][this.player.x] = playerCharacter;
-      } 
+      }
+      this.print();
+      this.askQuestion();
+      askCounter++;
+      if (this.isOutOfBounds()) {
+        term.red('Sorry, you are out of bounds');
+        break;
+      } else if (this.isHole()) {
+        term.red('Sorry, you fell down a hole');
+        break;
+      } else if (this.isHat()) {
+        term.yellow('Congrats, you found your hat!');
+        break;
+      }
+      this.field[this.playerPrev.y][this.playerPrev.x] = pathCharacter;
+      this.field[this.player.y][this.player.x] = playerCharacter;
     }
   }
   addHole() {
