@@ -36,9 +36,6 @@ class Field {
     //This property allows to distinguish the current position of the player and the path they made
     this.playerPrev = {x: this.player.x, y: this.player.y}
     this.field[this.player.y][this.player.x] = playerCharacter;
-    console.log(this.freeFields);
-    console.log(this.hat);
-    console.log(this.player);
   }
   print() {
     function arrayToString(item) {
@@ -80,38 +77,51 @@ class Field {
     this.player.x >= this.field[0].length);
     }
   runGame() {
-    let askCounter = 0;
-    while (true) {
-      if (this.hard && askCounter % 3 === 0 && askCounter > 0) {
-        this.addHole();
-      }
+    if (!this.canBeSolved()) {
       this.print();
-      this.askQuestion();
-      askCounter++;
-      if (this.isOutOfBounds()) {
-        term.red('Sorry, you are out of bounds');
-        break;
-      } else if (this.isHole()) {
-        term.red('Sorry, you fell down a hole');
-        break;
-      } else if (this.isHat()) {
-        term.yellow('Congrats, you found your hat!');
-        break;
-      }
-      this.field[this.playerPrev.y][this.playerPrev.x] = pathCharacter;
-      this.field[this.player.y][this.player.x] = playerCharacter;
-    } 
+      term.red("Sorry, this field can't be solved. Run the game again\n");
+    } else {
+      const mode = prompt('Would you like to play the hard mode of the game?');
+      if (mode === 'y' || mode === 'yes') {
+        this.hard = true;
+      }     
+      let askCounter = 0;
+      while (true) {
+        //Checking if the game is in the hard mode and the current turn is after every third turn
+        if (this.hard && askCounter % 3 === 0 && askCounter > 0) {
+          this.addHole();
+          if (!this.canBeSolved()) {
+            this.print();
+            term.red("Sorry, this field can't be solved. Run the game again\n");
+            break;
+          }
+        }
+        this.print();
+        this.askQuestion();
+        askCounter++;
+        if (this.isOutOfBounds()) {
+          term.red('Sorry, you are out of bounds');
+          break;
+        } else if (this.isHole()) {
+          term.red('Sorry, you fell down a hole');
+          break;
+        } else if (this.isHat()) {
+          term.yellow('Congrats, you found your hat!');
+          break;
+        }
+        this.field[this.playerPrev.y][this.playerPrev.x] = pathCharacter;
+        this.field[this.player.y][this.player.x] = playerCharacter;
+      } 
+    }
   }
   addHole() {
     //Create the array of free fields excluding the player position to prevent adding new holes at this position
     let freeFieldsFilter = this.freeFields.filter(field => field.x !== this.player.x || field.y !== this.player.y);
-    console.log(freeFieldsFilter);
     if (freeFieldsFilter.length > 0) {
       let newHole = freeFieldsFilter.pop();
       this.field[newHole.y][newHole.x] = hole;
       //Update the array of free fields to exclude previously added hole
       this.freeFields = freeFieldsFilter;
-      console.log(newHole);
     }
   }
   canBeSolved() {
@@ -207,10 +217,5 @@ const example = [
   ['░', 'O', 'O', '░'],
 ]
 
-const myField = new Field(Field.generateField(4, 4, 0.4), true);
-if (!myField.canBeSolved()) {
-    myField.print();
-    term.red("Sorry, this field can't be solved. Run the game again\n");
-} else {
-  myField.runGame();
-}
+const myField = new Field(Field.generateField(5, 5, 0.2));
+myField.runGame();
