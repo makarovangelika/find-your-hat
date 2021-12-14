@@ -8,34 +8,37 @@ const playerCharacter = '*';
 const pathCharacter = 'x';
 
 class Field {
-  constructor(field) {
+  constructor(field, hard) {
     this.field = field;
+    this.hard = hard;
     //Create the array with coordinates of free fields which aren't holes
-    const freeFields = [];
+    this.freeFields = [];
     this.field.forEach((row, y) => {
       row.forEach((cell, x) => {
         if (cell === fieldCharacter) {
-          freeFields.push({x: x, y: y})
+          this.freeFields.push({y: y, x: x})
         }
       });
     });
     //Shuffle the array of free fields' coordinates
     //It makes the choice of the field for the hat and the starting point random
-    if (freeFields.length >= 2) {
-      freeFields.sort((a, b) => 0.5 - Math.random());
+    if (this.freeFields.length >= 2) {
+      this.freeFields.sort((a, b) => 0.5 - Math.random());
     } else {
       throw 'Not enough free fields';
     }
+    //Choose the hat from the shuffled array of free fields' coordinates
+    this.hat = this.freeFields.pop();
+    this.field[this.hat.y][this.hat.x] = hat;
     //Choose the starting point from the shuffled array of free fields' coordinates
-    this.player = freeFields.pop();
+    this.player = this.freeFields[Math.floor(Math.random() * this.freeFields.length)];
     //Create the property of previous position of the player and assign the coordinates of the starting point to it
     //This property allows to distinguish the current position of the player and the path they made
     this.playerPrev = {x: this.player.x, y: this.player.y}
     this.field[this.player.y][this.player.x] = playerCharacter;
-
-    //Choose the hat from the shuffled array of free fields' coordinates
-    this.hat = freeFields.pop();
-    this.field[this.hat.y][this.hat.x] = hat;
+    console.log(this.freeFields);
+    console.log(this.hat);
+    console.log(this.player);
   }
   print() {
     function arrayToString(item) {
@@ -61,10 +64,6 @@ class Field {
       case 'u':
         this.player.y -= 1;
         break;
-      default:
-        term.red('Enter r, l, u or d');
-        this.askQuestion();
-        break;
     }
   }
   isHat() {
@@ -81,9 +80,14 @@ class Field {
     this.player.x >= this.field[0].length);
     }
   runGame() {
+    let askCounter = 0;
     while (true) {
+      if (this.hard && askCounter % 3 === 0 && askCounter > 0) {
+        this.addHole();
+      }
       this.print();
       this.askQuestion();
+      askCounter++;
       if (this.isOutOfBounds()) {
         term.red('Sorry, you are out of bounds');
         break;
@@ -93,11 +97,22 @@ class Field {
       } else if (this.isHat()) {
         term.yellow('Congrats, you found your hat!');
         break;
-      } else {
-        this.field[this.playerPrev.y][this.playerPrev.x] = pathCharacter;
-        this.field[this.player.y][this.player.x] = playerCharacter;
       }
+      this.field[this.playerPrev.y][this.playerPrev.x] = pathCharacter;
+      this.field[this.player.y][this.player.x] = playerCharacter;
     } 
+  }
+  addHole() {
+    //Create the array of free fields excluding the player position to prevent adding new holes at this position
+    let freeFieldsFilter = this.freeFields.filter(field => field.x !== this.player.x || field.y !== this.player.y);
+    console.log(freeFieldsFilter);
+    if (freeFieldsFilter.length > 0) {
+      let newHole = freeFieldsFilter.pop();
+      this.field[newHole.y][newHole.x] = hole;
+      //Update the array of free fields to exclude previously added hole
+      this.freeFields = freeFieldsFilter;
+      console.log(newHole);
+    }
   }
   canBeSolved() {
     //Create two-dimensional array which will contain group IDs for every field
@@ -191,7 +206,8 @@ const example = [
   ['░', '░', 'O', 'O'],
   ['░', 'O', 'O', '░'],
 ]
-const myField = new Field(Field.generateField(5, 5, 0.3));
+
+const myField = new Field(Field.generateField(4, 4, 0.4), true);
 if (!myField.canBeSolved()) {
     myField.print();
     term.red("Sorry, this field can't be solved. Run the game again\n");
