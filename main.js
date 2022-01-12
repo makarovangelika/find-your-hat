@@ -1,5 +1,6 @@
 const prompt = require('prompt-sync')({sigint: true});
 const term = require( 'terminal-kit' ).terminal;
+term.fullscreen(true);
 
 const hat = '^';
 const hole = 'O';
@@ -88,6 +89,7 @@ class Field {
     }     
     let askCounter = 0;
     while (true) {
+      term.clear();
       //Checking if the game is in the hard mode and the current turn is after every third turn
       if (this.hard && askCounter % 3 === 0 && askCounter > 0) {
         this.addHole();
