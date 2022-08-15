@@ -5,7 +5,7 @@ To start the game in the project directory run:
 
 ### `node main.js`
 
-After running the game you will be asked if you would like to play the hard mode. In the hard mode one hole will be added after every three turns. You must type `y` or `yes` to play the hard mode. You must type anything else if you don't want to play the hard mode.\
+After running the game you will be asked if you would like to play the hard mode. In the hard mode one more hole will be added after every three turns. You must type `y` or `yes` to play the hard mode. You must type anything else if you don't want to play the hard mode.\
 After choosing the mode you will be prompted to type the direction which you would like to move using these symbols:
 * `u` - up,
 * `d` - down,
@@ -16,4 +16,4 @@ If you found the hat or fell down one of the holes or stepped outside of the fie
 
 ![The illustration of the game](images/Find-your-hat1.png)
 ## Features
-In the beginning and after adding every hole in the hard mode the field will be checked if it's actually can be solved. This feature was built using [Hoshen–Kopelman algorithm](https://en.wikipedia.org/wiki/Hoshen%E2%80%93Kopelman_algorithm). You will be notified about that and in this case you have to run the game again.
+The field of the game is always generated randomly. In the beginning and after adding every hole in the hard mode the field will be checked if it's actually can be solved. This feature was built using [Hoshen–Kopelman algorithm](https://en.wikipedia.org/wiki/Hoshen%E2%80%93Kopelman_algorithm) for labeling clusters on a grid. You will be notified about that and in this case you have to run the game again.
